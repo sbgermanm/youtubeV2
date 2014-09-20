@@ -17,10 +17,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        
-        
         <project.youtube.version>v3-rev91-1.17.0-rc</project.youtube.version>
         <project.http.version>1.19.0</project.http.version>
         <project.oauth.version>1.19.0</project.oauth.version>
@@ -51,15 +47,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <configuration>
-          <mainClass>com.google.api.services.samples.youtube.cmdline.youtube_cmdline_playlistupdates_sample.PlaylistUpdates</mainClass>
-        </configuration>
-      </plugin>
-
       <!-- Forces Maven to use Java 1.6 -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

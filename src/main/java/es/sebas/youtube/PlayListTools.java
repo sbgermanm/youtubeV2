@@ -202,6 +202,30 @@ public class PlayListTools {
 
     }
 
+    
+    public static Playlist getPlayList(Credential credential, String playListID) {
+        Playlist playList = null;
+        try {
+            // YouTube object used to make all API requests.
+            YouTube youtube = new YouTube.Builder(new NetHttpTransport(), JSON_FACTORY, credential)
+                    .setApplicationName("youtube-sebas")
+                    .build();
+
+            YouTube.Playlists.List playListsRequest = youtube.playlists().list("snippet");
+            playListsRequest.setId(playListID);
+
+            PlaylistListResponse playlistsResponse = playListsRequest.execute();
+            playList = playlistsResponse.getItems().get(0);
+
+        } catch (IOException ex) {
+            Logger.getLogger(PlayListTools.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return playList;
+    }
+
+    
+    
+    
     public static List<Playlist> getAllPlayLists(Credential credential) {
         List<Playlist> playLists = new ArrayList<Playlist>();
         try {
@@ -232,6 +256,7 @@ public class PlayListTools {
     public static List<PlaylistItem> getAllWatchLaterItems(Credential credential) {
 
         String wlPlaylistId = getWlID(credential);
+        System.out.println("WatchLaterId : " + wlPlaylistId);
         return getAllPlayListItems(credential, wlPlaylistId);
     }
 
