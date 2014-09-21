@@ -74,7 +74,6 @@ public class PlayListTools {
                         JSON_FACTORY,
                         reader);
 
-
         FileDataStoreFactory fileDataStoreFactory = new FileDataStoreFactory(new File(System.getProperty("user.home") + "/" + CREDENTIALS_DIRECTORY));
         DataStore<StoredCredential> datastore = fileDataStoreFactory.getDataStore("youtubesebas");
 
@@ -84,8 +83,8 @@ public class PlayListTools {
                         JSON_FACTORY,
                         clientSecrets,
                         scopes)
-                        .setCredentialDataStore(datastore)
-                        .build();
+                .setCredentialDataStore(datastore)
+                .build();
 
         // Build the local server and bind it to port 9000
         LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
@@ -202,7 +201,13 @@ public class PlayListTools {
 
     }
 
-    
+    /**
+     * Obtain a playList object of a playListID
+     *
+     * @param credential
+     * @param playListID The id of the playList object to recover
+     * @return
+     */
     public static Playlist getPlayList(Credential credential, String playListID) {
         Playlist playList = null;
         try {
@@ -223,9 +228,12 @@ public class PlayListTools {
         return playList;
     }
 
-    
-    
-    
+    /**
+     * Return all the playlists of the user
+     *
+     * @param credential
+     * @return all the playlists of the user
+     */
     public static List<Playlist> getAllPlayLists(Credential credential) {
         List<Playlist> playLists = new ArrayList<Playlist>();
         try {
@@ -253,6 +261,27 @@ public class PlayListTools {
         return playLists;
     }
 
+    public static void deletePlayList(Credential credential, String playlistID) {
+        // YouTube object used to make all API requests.
+        YouTube youtube = new YouTube.Builder(new NetHttpTransport(), JSON_FACTORY, credential)
+                .setApplicationName("youtube-sebas")
+                .build();
+
+        try {
+            YouTube.Playlists.Delete playListsRequest = youtube.playlists().delete(playlistID);
+            playListsRequest.execute();
+
+        } catch (IOException ex) {
+            Logger.getLogger(PlayListTools.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Recover all the playListItems of the user
+     *
+     * @param credential
+     * @return all the playListItems of the user
+     */
     public static List<PlaylistItem> getAllWatchLaterItems(Credential credential) {
 
         String wlPlaylistId = getWlID(credential);
@@ -260,7 +289,14 @@ public class PlayListTools {
         return getAllPlayListItems(credential, wlPlaylistId);
     }
 
-    public static List<PlaylistItem> getAllPlayListItems(Credential credential, String wlPlaylistId) {
+    /**
+     * Recover all the playListItems of a playList ID
+     *
+     * @param credential
+     * @param playListID
+     * @return all the playListItems of a playList ID
+     */
+    public static List<PlaylistItem> getAllPlayListItems(Credential credential, String playListID) {
         // List to store all PlaylistItem items associated with the uploadPlaylistId.
         ArrayList<PlaylistItem> playlistItemList = new ArrayList<PlaylistItem>();
 
@@ -283,13 +319,12 @@ public class PlayListTools {
         YouTube.PlaylistItems.List playlistItemRequest;
         try {
             playlistItemRequest = youtube.playlistItems().list("id,contentDetails,snippet");
-            playlistItemRequest.setPlaylistId(wlPlaylistId);
+            playlistItemRequest.setPlaylistId(playListID);
 
             // This limits the results to only the data we need and makes things more efficient.
             playlistItemRequest.setFields(
                     "items(id,contentDetails/videoId,snippet/title),nextPageToken,pageInfo");
 
-            
             String nextToken = "";
 
             // Loops over all search page results returned for the uploadPlaylistId.
@@ -309,9 +344,16 @@ public class PlayListTools {
         return playlistItemList;
     }
 
-    public static void insertPlaylistItems(Credential credential, String playlistId, List<PlaylistItem> wlPlayListItems) {
+    /**
+     * Insert playListItems in a playList.
+     *
+     * @param credential
+     * @param playlistId
+     * @param playListItems
+     */
+    public static void insertPlaylistItems(Credential credential, String playlistId, List<PlaylistItem> playListItems) {
 
-        for (PlaylistItem playlistItem : wlPlayListItems) {
+        for (PlaylistItem playlistItem : playListItems) {
             try {
                 System.out.println("Inserting Video, ID=" + playlistItem.getContentDetails().getVideoId() + " with title: " + playlistItem.getSnippet().getTitle());
                 insertPlaylistItem(credential, playlistId, playlistItem.getContentDetails().getVideoId(), playlistItem.getSnippet().getTitle());
@@ -322,6 +364,12 @@ public class PlayListTools {
 
     }
 
+    /**
+     * Return the ID of the watchLater list of the user
+     *
+     * @param credential
+     * @return the ID of the watchLater list of the user
+     */
     public static String getWlID(Credential credential) {
         String wlPlaylistId = null;
 
@@ -359,6 +407,12 @@ public class PlayListTools {
         return wlPlaylistId;
     }
 
+    /**
+     * Return the PlayList object of the watchLater list of the user.
+     *
+     * @param credential
+     * @return the PlayList object of the watchLater list of the user.
+     */
     public static Playlist getWlPlayList(Credential credential) {
         Playlist wlPlayList = null;
         String wlID = getWlID(credential);
@@ -381,6 +435,13 @@ public class PlayListTools {
         return wlPlayList;
     }
 
+    /**
+     * Delete all the videos in the given playList ID
+     *
+     * @param credential
+     * @param listID Id of the list to be purge
+     * @throws IOException
+     */
     public static void deleteAllPlayListItems(Credential credential, String listID) throws IOException {
 
         YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
